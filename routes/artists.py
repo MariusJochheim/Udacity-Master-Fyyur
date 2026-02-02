@@ -144,13 +144,13 @@ def edit_artist_submission(artist_id):
         artist.name = request.form['name']
         artist.city = request.form['city']
         artist.state = request.form['state']
-        artist.phone = request.form.get('phone')
-        artist.image_link = request.form.get('image_link')
-        artist.facebook_link = request.form.get('facebook_link')
+        artist.phone = request.form.get('phone') or None
+        artist.image_link = request.form.get('image_link') or None
+        artist.facebook_link = request.form.get('facebook_link') or None
         artist.genres = request.form.getlist('genres')
-        artist.website_link = request.form.get('website_link')
+        artist.website_link = request.form.get('website_link') or None
         artist.seeking_venue = bool(request.form.get('seeking_venue'))
-        artist.seeking_description = request.form.get('seeking_description')
+        artist.seeking_description = request.form.get('seeking_description') or None
     try:
         db.session.commit()
         flash('Artist ' + request.form['name'] + ' was successfully updated!')
@@ -177,13 +177,13 @@ def create_artist_submission():
         name=request.form['name'],
         city=request.form['city'],
         state=request.form['state'],
-        phone=request.form.get('phone'),
-        image_link=request.form.get('image_link'),
-        facebook_link=request.form.get('facebook_link'),
+        phone=request.form.get('phone') or None,
+        image_link=request.form.get('image_link') or None,
+        facebook_link=request.form.get('facebook_link') or None,
         genres=request.form.getlist('genres'),
-        website_link=request.form.get('website_link'),
+        website_link=request.form.get('website_link') or None,
         seeking_venue=bool(request.form.get('seeking_venue')),
-        seeking_description=request.form.get('seeking_description'),
+        seeking_description=request.form.get('seeking_description') or None,
     )
     data = artist
     try:

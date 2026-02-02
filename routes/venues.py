@@ -158,13 +158,13 @@ def create_venue_submission():
         city=request.form['city'],
         state=request.form['state'],
         address=request.form['address'],
-        phone=request.form.get('phone'),
-        image_link=request.form.get('image_link'),
-        facebook_link=request.form.get('facebook_link'),
+        phone=request.form.get('phone') or None,
+        image_link=request.form.get('image_link') or None,
+        facebook_link=request.form.get('facebook_link') or None,
         genres=request.form.getlist('genres'),
-        website_link=request.form.get('website_link'),
+        website_link=request.form.get('website_link') or None,
         seeking_talent=bool(request.form.get('seeking_talent')),
-        seeking_description=request.form.get('seeking_description'),
+        seeking_description=request.form.get('seeking_description') or None,
     )
     data = venue
     try:
@@ -204,13 +204,13 @@ def edit_venue_submission(venue_id):
         venue.city = request.form['city']
         venue.state = request.form['state']
         venue.address = request.form['address']
-        venue.phone = request.form.get('phone')
-        venue.image_link = request.form.get('image_link')
-        venue.facebook_link = request.form.get('facebook_link')
+        venue.phone = request.form.get('phone') or None
+        venue.image_link = request.form.get('image_link') or None
+        venue.facebook_link = request.form.get('facebook_link') or None
         venue.genres = request.form.getlist('genres')
-        venue.website_link = request.form.get('website_link')
+        venue.website_link = request.form.get('website_link') or None
         venue.seeking_talent = bool(request.form.get('seeking_talent'))
-        venue.seeking_description = request.form.get('seeking_description')
+        venue.seeking_description = request.form.get('seeking_description') or None
     try:
         db.session.commit()
         flash('Venue ' + request.form['name'] + ' was successfully updated!')

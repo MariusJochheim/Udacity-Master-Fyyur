@@ -165,6 +165,14 @@ def show_venue(venue_id):
   # shows the venue page with the given venue_id
   venue = Venue.query.get(venue_id)
   now = datetime.utcnow()
+  genres = venue.genres or []
+  if isinstance(genres, (list, tuple)):
+    if genres and all(isinstance(g, str) and len(g) == 1 for g in genres):
+      genres = "".join(genres)
+    elif len(genres) == 1 and isinstance(genres[0], str):
+      genres = genres[0]
+  if isinstance(genres, str):
+    genres = [g.strip() for g in genres.strip("{}").split(",") if g.strip()]
   shows = (
     db.session.query(Show, Artist)
     .join(Artist, Show.artist_id == Artist.id)
@@ -187,7 +195,7 @@ def show_venue(venue_id):
   data = {
     "id": venue.id,
     "name": venue.name,
-    "genres": venue.genres,
+    "genres": genres,
     "address": venue.address,
     "city": venue.city,
     "state": venue.state,

@@ -166,19 +166,25 @@ source env/bin/activate
 source env/Scripts/activate
 ```
 
-4. **Install the dependencies:**
+4. **Create your environment file:**
+```
+cp example.env .env
+```
+Open `.env` and fill in your own values.
+
+5. **Install the dependencies:**
 ```
 pip install -r requirements.txt
 ```
 
-5. **Run the development server:**
+6. **Run the development server:**
 ```
 export FLASK_APP=myapp
 export FLASK_ENV=development # enables debug mode
 python3 app.py
 ```
 
-6. **Verify on the Browser**<br>
+7. **Verify on the Browser**<br>
 Navigate to project homepage [http://127.0.0.1:5000/](http://127.0.0.1:5000/) or [http://localhost:5000](http://localhost:5000) 
 
 ## Troubleshooting:

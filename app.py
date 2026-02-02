@@ -10,7 +10,6 @@ from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 import logging
 from logging import Formatter, FileHandler
-from flask_wtf import Form
 from forms import *
 #----------------------------------------------------------------------------#
 # App Config.

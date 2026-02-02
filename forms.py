@@ -13,7 +13,7 @@ class ShowForm(FlaskForm):
     start_time = DateTimeField(
         'start_time',
         validators=[DataRequired()],
-        default= datetime.today()
+        default= datetime.today().replace(second=0, microsecond=0)
     )
 
 class VenueForm(FlaskForm):

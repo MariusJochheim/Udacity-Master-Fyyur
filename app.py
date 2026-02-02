@@ -4,7 +4,6 @@
 
 import json
 from datetime import datetime
-import dateutil.parser
 import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
 from flask_moment import Moment
@@ -86,7 +85,14 @@ class Show(db.Model):
 #----------------------------------------------------------------------------#
 
 def format_datetime(value, format='medium'):
-  date = dateutil.parser.parse(value)
+  if isinstance(value, datetime):
+    date = value
+  else:
+    value_str = str(value)
+    try:
+      date = datetime.fromisoformat(value_str)
+    except ValueError:
+      date = datetime.strptime(value_str, "%Y-%m-%d %H:%M:%S")
   if format == 'full':
       format="EEEE MMMM, d, y 'at' h:mma"
   elif format == 'medium':
@@ -510,43 +516,24 @@ def create_artist_submission():
 @app.route('/shows')
 def shows():
   # displays list of shows at /shows
-  # TODO: replace with real venues data.
-  data=[{
-    "venue_id": 1,
-    "venue_name": "The Musical Hop",
-    "artist_id": 4,
-    "artist_name": "Guns N Petals",
-    "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-    "start_time": "2019-05-21T21:30:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 5,
-    "artist_name": "Matt Quevedo",
-    "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
-    "start_time": "2019-06-15T23:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-01T20:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-08T20:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-15T20:00:00.000Z"
-  }]
+  shows = (
+    db.session.query(Show, Venue, Artist)
+    .join(Venue, Show.venue_id == Venue.id)
+    .join(Artist, Show.artist_id == Artist.id)
+    .order_by(Show.start_time)
+    .all()
+  )
+  data = [
+    {
+      "venue_id": venue.id,
+      "venue_name": venue.name,
+      "artist_id": artist.id,
+      "artist_name": artist.name,
+      "artist_image_link": artist.image_link,
+      "start_time": show.start_time.isoformat(),
+    }
+    for show, venue, artist in shows
+  ]
   return render_template('pages/shows.html', shows=data)
 
 @app.route('/shows/create')
@@ -558,13 +545,34 @@ def create_shows():
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
-  # TODO: insert form data as a new Show record in the db, instead
+  start_time_raw = request.form.get('start_time', '').strip()
+  try:
+    if "T" in start_time_raw:
+      start_time = datetime.fromisoformat(start_time_raw)
+    else:
+      try:
+        start_time = datetime.strptime(start_time_raw, "%Y-%m-%d %H:%M")
+      except ValueError:
+        start_time = datetime.strptime(start_time_raw, "%Y-%m-%d %H:%M:%S")
+  except ValueError:
+    flash('An error occurred. Show could not be listed.')
+    return render_template('pages/home.html')
+  show = Show(
+    artist_id=request.form['artist_id'],
+    venue_id=request.form['venue_id'],
+    start_time=start_time,
+  )
+  data = show
+  try:
+    db.session.add(show)
+    db.session.commit()
+  except Exception:
+    db.session.rollback()
+    flash('An error occurred. Show could not be listed.')
+    return render_template('pages/home.html')
 
   # on successful db insert, flash success
   flash('Show was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Show could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html')
 
 @app.errorhandler(404)
